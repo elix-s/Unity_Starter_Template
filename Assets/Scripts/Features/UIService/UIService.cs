@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
+using System;
 
 public class UIService 
 {
@@ -19,6 +20,47 @@ public class UIService
         _container = container;
     }
 
+    public async UniTask<GameObject> ShowUIPanel(string assetKey) 
+    {
+        if (!string.IsNullOrEmpty(assetKey))
+        {
+            var panel = await _assetProvider.GetAssetAsync<GameObject>(assetKey);
+            _assetUnloader.AddResource(panel);
+
+            var prefab = _container.Instantiate(panel);
+            _assetUnloader.AttachInstance(prefab.gameObject);
+
+            return prefab;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    public async UniTask<T> ShowUIPanelWithComponent<T>(string assetKey) where T : Component
+    {
+        if (!string.IsNullOrEmpty(assetKey))
+        {
+            var panel = await _assetProvider.GetAssetAsync<GameObject>(assetKey);
+            _assetUnloader.AddResource(panel);
+
+            var prefab = _container.Instantiate(panel).GetComponent<T>();
+            _assetUnloader.AttachInstance(prefab.gameObject);
+
+            return prefab;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    public async UniTask HideUIPanel()
+    {
+        _assetUnloader.Dispose();
+    }
+    
     public async UniTask ShowMainMenu()
     {
         var panel = await _assetProvider.GetAssetAsync<GameObject>("MainMenu");
