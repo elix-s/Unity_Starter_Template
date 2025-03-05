@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace EventBus
 {
     internal class Pool<V> where V : IDispatchableEvent
     {
-        [ShowInInspector] private readonly Dictionary<Type, Stack<V>> _ready = new Dictionary<Type, Stack<V>>();
-        [ShowInInspector] private readonly List<V> _busy = new List<V>();
+        private readonly Dictionary<Type, Stack<V>> _ready = new Dictionary<Type, Stack<V>>();
+        private readonly List<V> _busy = new List<V>();
         private readonly string _name;
 
         internal Pool(string name, HashSet<EventInfo> infoSet)

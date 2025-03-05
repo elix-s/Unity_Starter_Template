@@ -1,35 +1,121 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using UnityEngine;
 
 public class GameStateService 
 {
     private IGameState _currentState;
-    private Dictionary<Type, IGameState> _states = new Dictionary<Type, IGameState>();
+    private readonly Dictionary<Type, IGameState> _states = new Dictionary<Type, IGameState>();
+    private readonly Stack<IGameState> _stateStack = new Stack<IGameState>();
+    
+    public event Action<Type, Type> OnStateChanged; 
     
     public void RegisterStates(IEnumerable<IGameState> states)
     {
         foreach (var state in states)
         {
-            _states[state.GetType()] = state;
+            var type = state.GetType();
+            
+            if (_states.ContainsKey(type))
+            {
+                Debug.LogWarning($"Status {type} is already registered.");
+            }
+            else
+            {
+                _states.Add(type, state);
+            }
         }
     }
-
-    public void ChangeState<T>() where T : IGameState
+    
+    public void ChangeState<T>(object data = null) where T : IGameState
     {
-        if (_states.TryGetValue(typeof(T), out var newState))
+        if (!_states.TryGetValue(typeof(T), out var newState))
+            throw new ArgumentException($"State {typeof(T)} not registered.");
+
+        var previousState = _currentState;
+        previousState?.Exit();
+
+        _currentState = newState;
+        _currentState.Enter(data);
+        
+        OnStateChanged?.Invoke(previousState?.GetType(), newState.GetType());
+    }
+
+    /// <summary>
+    /// Asynchronous state change. If the state implements IAsyncGameState, asynchronous methods are used.
+    /// </summary>
+    public async Task ChangeStateAsync<T>(object data = null) where T : IGameState
+    {
+        if (!_states.TryGetValue(typeof(T), out var newState))
+            throw new ArgumentException($"State {typeof(T)} not registered.");
+
+        var previousState = _currentState;
+        
+        if (previousState is IAsyncGameState asyncPrev)
         {
-            _currentState?.Exit();
-            _currentState = newState;
-            _currentState.Enter();
+            await asyncPrev.ExitAsync();
         }
         else
         {
-            throw new ArgumentException($"State {typeof(T)} is not registered.");
+            previousState?.Exit();
         }
-    }
 
+        _currentState = newState;
+        
+        if (_currentState is IAsyncGameState asyncCurrent)
+        {
+            await asyncCurrent.EnterAsync(data);
+        }
+        else
+        {
+            _currentState.Enter(data);
+        }
+
+        OnStateChanged?.Invoke(previousState?.GetType(), newState.GetType());
+    }
+    
     public void Update()
     {
         _currentState?.Update();
+    }
+
+    /// <summary>
+    /// Temporarily switch to a new state while keeping the current one on the stack.
+    /// </summary>
+    public void PushState<T>(object data = null) where T : IGameState
+    {
+        if (!_states.TryGetValue(typeof(T), out var newState))
+            throw new ArgumentException($"State {typeof(T)} not registered.");
+
+        if (_currentState != null)
+        {
+            _stateStack.Push(_currentState);
+            _currentState.Exit();
+        }
+
+        _currentState = newState;
+        _currentState.Enter(data);
+        
+        OnStateChanged?.Invoke(null, newState.GetType());
+    }
+
+    /// <summary>
+    /// Return to the previous state from the stack.
+    /// </summary>
+    public void PopState()
+    {
+        if (_stateStack.Count > 0)
+        {
+            _currentState?.Exit();
+            var previousState = _stateStack.Pop();
+            _currentState = previousState;
+            _currentState.Enter();
+            OnStateChanged?.Invoke(null, previousState.GetType());
+        }
+        else
+        {
+            Debug.LogError("There are no states on the stack to return to..");
+        }
     }
 }

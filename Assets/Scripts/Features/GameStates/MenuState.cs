@@ -15,7 +15,7 @@ public class MenuState : IGameState
         _audioService = audioService;
     }
 
-    public void Enter()
+    public void Enter(object obj)
     {
         _logger.Log("Entering MenuState");
         _uiService.ShowMainMenu().Forget();

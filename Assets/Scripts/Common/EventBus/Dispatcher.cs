@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Assertions;
 using Object = UnityEngine.Object;
@@ -51,7 +50,7 @@ namespace EventBus
     /// </code></example>
     public class Dispatcher<V> where V : IDispatchableEvent
     {
-        [ShowInInspector] private readonly Pool<V> _pool;
+        private readonly Pool<V> _pool;
         private readonly Dictionary<Type, Dispatchable> _meta = new Dictionary<Type, Dispatchable>();
 
         /// <summary>Creates new event dispatcher.</summary>

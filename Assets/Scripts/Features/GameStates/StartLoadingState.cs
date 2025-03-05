@@ -4,15 +4,18 @@ public class StartLoadingState : IGameState
 {
     private GameStateService _gameState;
     private readonly Logger _logger;
+    private SavingSystem _savingSystem;
     
-    public StartLoadingState(GameStateService gameStateService, Logger logger)
+    public StartLoadingState(GameStateService gameStateService, Logger logger, SavingSystem savingSystem)
     {
         _gameState = gameStateService;
         _logger = logger;
+        _savingSystem = savingSystem;
     }
     
-    public void Enter()
+    public void Enter(object obj)
     {
+        AppData appData = _savingSystem.LoadData<AppData>();
         _logger.Log("StartLoadingState");
         _gameState.ChangeState<MenuState>();
     }
