@@ -17,6 +17,7 @@ public class GameLifetimeScope : LifetimeScope
         builder.Register<UIService>(Lifetime.Singleton);
         builder.Register<AudioService>(Lifetime.Singleton);
         builder.Register<SavingSystem>(Lifetime.Singleton);
+        builder.Register<EventsDispatcher>(Lifetime.Singleton);
         
         //providers
         builder.Register<IAssetProvider, AssetProvider>(Lifetime.Transient);

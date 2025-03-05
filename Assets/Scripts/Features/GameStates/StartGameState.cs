@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class StartGameState : IGameState
 {
     public void Enter(object obj) {}

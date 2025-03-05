@@ -9,8 +9,6 @@ public class GameStateService
     private readonly Dictionary<Type, IGameState> _states = new Dictionary<Type, IGameState>();
     private readonly Stack<IGameState> _stateStack = new Stack<IGameState>();
     
-    public event Action<Type, Type> OnStateChanged; 
-    
     public void RegisterStates(IEnumerable<IGameState> states)
     {
         foreach (var state in states)
@@ -38,8 +36,6 @@ public class GameStateService
 
         _currentState = newState;
         _currentState.Enter(data);
-        
-        OnStateChanged?.Invoke(previousState?.GetType(), newState.GetType());
     }
 
     /// <summary>
@@ -71,8 +67,6 @@ public class GameStateService
         {
             _currentState.Enter(data);
         }
-
-        OnStateChanged?.Invoke(previousState?.GetType(), newState.GetType());
     }
     
     public void Update()
@@ -96,8 +90,6 @@ public class GameStateService
 
         _currentState = newState;
         _currentState.Enter(data);
-        
-        OnStateChanged?.Invoke(null, newState.GetType());
     }
 
     /// <summary>
@@ -111,7 +103,6 @@ public class GameStateService
             var previousState = _stateStack.Pop();
             _currentState = previousState;
             _currentState.Enter();
-            OnStateChanged?.Invoke(null, previousState.GetType());
         }
         else
         {

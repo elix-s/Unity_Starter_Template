@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class StartLoadingState : IGameState
 {
     private GameStateService _gameState;
