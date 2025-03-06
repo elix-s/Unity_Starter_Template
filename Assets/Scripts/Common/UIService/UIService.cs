@@ -67,4 +67,12 @@ public class UIService
         _assetUnloader.AddResource(panel);
         _container.Instantiate(panel);
     }
+    
+    public async UniTask<GameObject> ShowLoadingScreen()
+    {
+        var panel = await _assetProvider.GetAssetAsync<GameObject>("LoadingScreen");
+        _assetUnloader.AddResource(panel);
+        var prefab = _container.Instantiate(panel);
+        return prefab;
+    }
 }

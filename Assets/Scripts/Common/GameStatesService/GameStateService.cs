@@ -1,13 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Common.AssetsSystem;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
+using VContainer;
 
 public class GameStateService 
 {
     private IGameState _currentState;
     private readonly Dictionary<Type, IGameState> _states = new Dictionary<Type, IGameState>();
     private readonly Stack<IGameState> _stateStack = new Stack<IGameState>();
+    private readonly UIService _uiService;
+    
+    public GameStateService(UIService uiService)
+    {
+        _uiService = uiService;
+    }
     
     public void RegisterStates(IEnumerable<IGameState> states)
     {
@@ -28,6 +37,8 @@ public class GameStateService
     
     public void ChangeState<T>(object data = null) where T : IGameState
     {
+        var loadingScreen = _uiService.ShowLoadingScreen();
+        
         if (!_states.TryGetValue(typeof(T), out var newState))
             throw new ArgumentException($"State {typeof(T)} not registered.");
 
