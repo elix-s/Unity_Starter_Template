@@ -13,7 +13,6 @@ public class GameLifetimeScope : LifetimeScope
         //game services
         builder.Register<SceneLoader>(Lifetime.Singleton);
         builder.Register<Logger>(Lifetime.Singleton);
-        builder.Register<InputService>(Lifetime.Singleton);
         builder.Register<UIService>(Lifetime.Singleton);
         builder.Register<AudioService>(Lifetime.Singleton);
         builder.Register<SavingSystem>(Lifetime.Singleton);

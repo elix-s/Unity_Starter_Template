@@ -37,7 +37,7 @@ public class GameStateService
     
     public void ChangeState<T>(object data = null) where T : IGameState
     {
-        var loadingScreen = _uiService.ShowLoadingScreen();
+        _uiService.ShowLoadingScreen(1000).Forget();
         
         if (!_states.TryGetValue(typeof(T), out var newState))
             throw new ArgumentException($"State {typeof(T)} not registered.");

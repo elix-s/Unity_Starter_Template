@@ -12,12 +12,15 @@ public class UIService
     private readonly IAssetProvider _assetProvider;
     private IAssetUnloader _assetUnloader;
     private IObjectResolver _container;
+    private IAssetUnloader _loadingWindowUnloader;
 
-    public UIService(IAssetProvider assetProvider, IAssetUnloader assetUnloader, IObjectResolver container)
+    public UIService(IAssetProvider assetProvider, IAssetUnloader assetUnloader, IObjectResolver container,
+        IAssetUnloader loadingWindowUnloader)
     {
         _assetProvider = assetProvider;
         _assetUnloader = assetUnloader;
         _container = container;
+        _loadingWindowUnloader = loadingWindowUnloader;
     }
 
     public async UniTask<GameObject> ShowUIPanel(string assetKey) 
@@ -68,11 +71,13 @@ public class UIService
         _container.Instantiate(panel);
     }
     
-    public async UniTask<GameObject> ShowLoadingScreen()
+    public async UniTask ShowLoadingScreen(int delay)
     {
         var panel = await _assetProvider.GetAssetAsync<GameObject>("LoadingScreen");
-        _assetUnloader.AddResource(panel);
         var prefab = _container.Instantiate(panel);
-        return prefab;
+        _loadingWindowUnloader.AddResource(panel);
+        _loadingWindowUnloader.AttachInstance(prefab);
+        await UniTask.Delay(delay);
+        _loadingWindowUnloader.Dispose();
     }
 }

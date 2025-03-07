@@ -22,13 +22,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 18f909786e35f664f93d272925fd3335
+    m_Address: SFXAudioSource
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1a539ab91787c9144a288a3a9ccddb2b
     m_Address: LoadingScreen
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3bf81081f1fb34c4ba6070beab8eea2f
-    m_Address: AudioSource
+    m_Address: MusicAudioSource
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

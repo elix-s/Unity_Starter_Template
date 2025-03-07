@@ -15,7 +15,8 @@ public class Logger
     public void Log(string message,
         [CallerMemberName] string callerName = "",
         [CallerFilePath] string callerFile = "",
-        [CallerLineNumber] int callerLine = 0)
+        [CallerLineNumber] int callerLine = 0
+        )
     {
         if (MinimumLogLevel > LogLevel.Info)
             return;

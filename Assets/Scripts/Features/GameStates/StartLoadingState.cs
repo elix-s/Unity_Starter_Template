@@ -13,7 +13,6 @@ public class StartLoadingState : IGameState
     
     public void Enter(object obj)
     {
-        AppData appData = _savingSystem.LoadData<AppData>();
         _logger.Log("StartLoadingState");
         _gameState.ChangeState<MenuState>();
     }
