@@ -1,4 +1,7 @@
 using Cysharp.Threading.Tasks;
+using Common.AudioService;
+using Common.SavingSystem;
+using Common.UIService;
 using UnityEngine;
 
 public class MenuState : IGameState
@@ -21,6 +24,7 @@ public class MenuState : IGameState
 
     public void Enter(object obj)
     {
+        _uiService.ShowLoadingScreen(1000).Forget();
         _logger.Log("Entering MenuState");
         _uiService.ShowMainMenu().Forget();
         _audioService.InstantiateAudioSources().Forget();

@@ -1,83 +1,83 @@
-using System.Collections;
-using System.Collections.Generic;
 using Common.AssetsSystem;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
-using System;
 
-public class UIService 
+namespace Common.UIService
 {
-    private readonly IAssetProvider _assetProvider;
-    private IAssetUnloader _assetUnloader;
-    private IObjectResolver _container;
-    private IAssetUnloader _loadingWindowUnloader;
-
-    public UIService(IAssetProvider assetProvider, IAssetUnloader assetUnloader, IObjectResolver container,
-        IAssetUnloader loadingWindowUnloader)
+    public class UIService
     {
-        _assetProvider = assetProvider;
-        _assetUnloader = assetUnloader;
-        _container = container;
-        _loadingWindowUnloader = loadingWindowUnloader;
-    }
+        private readonly IAssetProvider _assetProvider;
+        private IAssetUnloader _assetUnloader;
+        private IObjectResolver _container;
+        private IAssetUnloader _loadingWindowUnloader;
 
-    public async UniTask<GameObject> ShowUIPanel(string assetKey) 
-    {
-        if (!string.IsNullOrEmpty(assetKey))
+        public UIService(IAssetProvider assetProvider, IAssetUnloader assetUnloader, IObjectResolver container,
+            IAssetUnloader loadingWindowUnloader)
         {
-            var panel = await _assetProvider.GetAssetAsync<GameObject>(assetKey);
-            _assetUnloader.AddResource(panel);
+            _assetProvider = assetProvider;
+            _assetUnloader = assetUnloader;
+            _container = container;
+            _loadingWindowUnloader = loadingWindowUnloader;
+        }
 
+        public async UniTask<GameObject> ShowUIPanel(string assetKey)
+        {
+            if (!string.IsNullOrEmpty(assetKey))
+            {
+                var panel = await _assetProvider.GetAssetAsync<GameObject>(assetKey);
+                _assetUnloader.AddResource(panel);
+
+                var prefab = _container.Instantiate(panel);
+                _assetUnloader.AttachInstance(prefab.gameObject);
+
+                return prefab;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public async UniTask<T> ShowUIPanelWithComponent<T>(string assetKey) where T : Component
+        {
+            if (!string.IsNullOrEmpty(assetKey))
+            {
+                var panel = await _assetProvider.GetAssetAsync<GameObject>(assetKey);
+                _assetUnloader.AddResource(panel);
+
+                var prefab = _container.Instantiate(panel).GetComponent<T>();
+                _assetUnloader.AttachInstance(prefab.gameObject);
+
+                return prefab;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public async UniTask HideUIPanel()
+        {
+            _assetUnloader.Dispose();
+        }
+
+        public async UniTask ShowMainMenu()
+        {
+            var panel = await _assetProvider.GetAssetAsync<GameObject>("MainMenu");
+            _assetUnloader.AddResource(panel);
+            _container.Instantiate(panel);
+        }
+
+        public async UniTask ShowLoadingScreen(int delay)
+        {
+            var panel = await _assetProvider.GetAssetAsync<GameObject>("LoadingScreen");
             var prefab = _container.Instantiate(panel);
-            _assetUnloader.AttachInstance(prefab.gameObject);
-
-            return prefab;
+            _loadingWindowUnloader.AddResource(panel);
+            _loadingWindowUnloader.AttachInstance(prefab);
+            await UniTask.Delay(delay);
+            _loadingWindowUnloader.Dispose();
         }
-        else
-        {
-            return null;
-        }
-    }
-    
-    public async UniTask<T> ShowUIPanelWithComponent<T>(string assetKey) where T : Component
-    {
-        if (!string.IsNullOrEmpty(assetKey))
-        {
-            var panel = await _assetProvider.GetAssetAsync<GameObject>(assetKey);
-            _assetUnloader.AddResource(panel);
-
-            var prefab = _container.Instantiate(panel).GetComponent<T>();
-            _assetUnloader.AttachInstance(prefab.gameObject);
-
-            return prefab;
-        }
-        else
-        {
-            return null;
-        }
-    }
-    
-    public async UniTask HideUIPanel()
-    {
-        _assetUnloader.Dispose();
-    }
-    
-    public async UniTask ShowMainMenu()
-    {
-        var panel = await _assetProvider.GetAssetAsync<GameObject>("MainMenu");
-        _assetUnloader.AddResource(panel);
-        _container.Instantiate(panel);
-    }
-    
-    public async UniTask ShowLoadingScreen(int delay)
-    {
-        var panel = await _assetProvider.GetAssetAsync<GameObject>("LoadingScreen");
-        var prefab = _container.Instantiate(panel);
-        _loadingWindowUnloader.AddResource(panel);
-        _loadingWindowUnloader.AttachInstance(prefab);
-        await UniTask.Delay(delay);
-        _loadingWindowUnloader.Dispose();
     }
 }

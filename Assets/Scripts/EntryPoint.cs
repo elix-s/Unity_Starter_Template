@@ -1,4 +1,5 @@
 using VContainer.Unity;
+using Common.GameStateService;
 
 public class EntryPoint : IStartable
 {

@@ -1,7 +1,11 @@
 using System.Collections.Generic;
 using Common.AssetsSystem;
+using Common.AudioService;
+using Common.GameStateService;
 using VContainer;
 using VContainer.Unity;
+using Common.SavingSystem;
+using Common.UIService;
 
 public class GameLifetimeScope : LifetimeScope
 {
