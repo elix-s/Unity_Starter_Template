@@ -6,60 +6,70 @@ using UnityEngine.UI;
 public enum OnClickAnimationType { ScaleDown, FadeOut, Bounce, Shake }
 public enum HoverAnimationType { Move, ColorTint, Rotate }
 
-[RequireComponent(typeof(Button))]
+[RequireComponent(typeof(Button)),RequireComponent(typeof(CanvasGroup)), RequireComponent(typeof(Image))]
 public class ButtonComponent : MonoBehaviour, 
     IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
 {
     [Header("Pulse Animation")]
-    [SerializeField] private bool enablePulseAnimation = false;
-    [SerializeField] private float pulseScale = 1.1f;
-    [SerializeField] private float pulseDuration = 1f;
-    [SerializeField] private float pulseInterval = 1f;
+    [SerializeField] private bool _enablePulseAnimation = false;
+    [SerializeField] private float _pulseScale = 1.1f;
+    [SerializeField] private float _pulseDuration = 1f;
+    [SerializeField] private float _pulseInterval = 1f;
 
     [Header("Click Animation")]
-    [SerializeField] private OnClickAnimationType onClickAnimation = OnClickAnimationType.ScaleDown;
-    [SerializeField] private float clickAnimationDuration = 0.2f;
+    [SerializeField] private OnClickAnimationType _onClickAnimation = OnClickAnimationType.ScaleDown;
+    [SerializeField] private float _clickAnimationDuration = 0.2f;
 
     [Header("Hover Animation")]
-    [SerializeField] private HoverAnimationType hoverAnimation = HoverAnimationType.Move;
-    [SerializeField] private Vector3 hoverOffset = new Vector3(20f, 0, 0);
-    [SerializeField] private float hoverDuration = 0.3f;
-    [SerializeField] private Color hoverColor = Color.cyan;
+    [SerializeField] private HoverAnimationType _hoverAnimation = HoverAnimationType.Move;
+    [SerializeField] private Vector3 _hoverOffset = new Vector3(20f, 0, 0);
+    [SerializeField] private float _hoverDuration = 0.3f;
+    [SerializeField] private Color _hoverColor = Color.cyan;
+    
+    [Header("Delay")]
+    [SerializeField] private bool _enableDelay = false;
+    [SerializeField] private float _delay = 1.0f;       
+    [SerializeField] private float _fadeDuration = 1.0f;
 
-    private Vector3 originalPosition;
+    private Vector3 _originalPosition;
     private Vector3 originalScale;
-    private Color originalColor;
-    private RectTransform rectTransform;
-    private Button button;
-    private Image buttonImage;
+    private Color _originalColor;
+    private RectTransform _rectTransform;
+    private Button _button;
+    private Image _buttonImage;
+    private CanvasGroup _canvasGroup;
 
     private void Awake()
     {
-        rectTransform = GetComponent<RectTransform>();
-        originalPosition = rectTransform.anchoredPosition;
-        originalScale = rectTransform.localScale;
-        button = GetComponent<Button>();
-        buttonImage = GetComponent<Image>();
-        if (buttonImage != null)
-            originalColor = buttonImage.color;
+        _rectTransform = GetComponent<RectTransform>();
+        _originalPosition = _rectTransform.anchoredPosition;
+        originalScale = _rectTransform.localScale;
+        _button = GetComponent<Button>();
+        _buttonImage = GetComponent<Image>();
+        if (_buttonImage != null)
+            _originalColor = _buttonImage.color;
+        _canvasGroup = GetComponent<CanvasGroup>();
 
-        button.onClick.AddListener(PlayOnClickAnimation);
+        _button.onClick.AddListener(PlayOnClickAnimation);
     }
 
     private void Start()
     {
-        if (enablePulseAnimation)
+        if (_enablePulseAnimation)
             PulseAnimation();
+        
+        if(_enableDelay)
+            AddingDelay();
     }
 
     #region Pulse Animation
     
     private void PulseAnimation()
     {
-        rectTransform.DOScale(pulseScale, pulseDuration)
+        _rectTransform.DOScale(_pulseScale, _pulseDuration)
             .SetLoops(2, LoopType.Yoyo)
             .SetEase(Ease.InOutSine)
-            .OnComplete(() => Invoke(nameof(PulseAnimation), pulseInterval));
+            .OnComplete(() => Invoke(nameof(PulseAnimation), _pulseInterval));
     }
     
     #endregion
@@ -68,27 +78,27 @@ public class ButtonComponent : MonoBehaviour,
     
     private void PlayOnClickAnimation()
     {
-        switch (onClickAnimation)
+        switch (_onClickAnimation)
         {
             case OnClickAnimationType.ScaleDown:
-                rectTransform.DOScale(0f, clickAnimationDuration).SetEase(Ease.InBack)
-                    .OnComplete(() => rectTransform.DOScale(originalScale, clickAnimationDuration).SetEase(Ease.OutBack));
+                _rectTransform.DOScale(0f, _clickAnimationDuration).SetEase(Ease.InBack)
+                    .OnComplete(() => _rectTransform.DOScale(originalScale, _clickAnimationDuration).SetEase(Ease.OutBack));
                 break;
 
             case OnClickAnimationType.FadeOut:
-                if (buttonImage)
+                if (_buttonImage)
                 {
-                    buttonImage.DOFade(0f, clickAnimationDuration)
-                        .OnComplete(() => buttonImage.DOFade(1f, clickAnimationDuration));
+                    _buttonImage.DOFade(0f, _clickAnimationDuration)
+                        .OnComplete(() => _buttonImage.DOFade(1f, _clickAnimationDuration));
                 }
                 break;
 
             case OnClickAnimationType.Bounce:
-                rectTransform.DOPunchScale(new Vector3(0.2f, 0.2f, 0), clickAnimationDuration, 10, 1f);
+                _rectTransform.DOPunchScale(new Vector3(0.2f, 0.2f, 0), _clickAnimationDuration, 10, 1f);
                 break;
 
             case OnClickAnimationType.Shake:
-                rectTransform.DOShakePosition(clickAnimationDuration, new Vector3(10, 10, 0));
+                _rectTransform.DOShakePosition(_clickAnimationDuration, new Vector3(10, 10, 0));
                 break;
         }
     }
@@ -99,22 +109,22 @@ public class ButtonComponent : MonoBehaviour,
     
     public void OnPointerEnter(PointerEventData eventData)
     {
-        switch (hoverAnimation)
+        switch (_hoverAnimation)
         {
             case HoverAnimationType.Move:
-                rectTransform.DOAnchorPos(originalPosition + (Vector3)hoverOffset, hoverDuration)
+                _rectTransform.DOAnchorPos(_originalPosition + (Vector3)_hoverOffset, _hoverDuration)
                     .SetEase(Ease.OutQuad);
                 break;
 
             case HoverAnimationType.ColorTint:
-                if (buttonImage)
+                if (_buttonImage)
                 {
-                    buttonImage.DOColor(hoverColor, hoverDuration);
+                    _buttonImage.DOColor(_hoverColor, _hoverDuration);
                 }
                 break;
 
             case HoverAnimationType.Rotate:
-                rectTransform.DORotate(new Vector3(0, 0, 15f), hoverDuration)
+                _rectTransform.DORotate(new Vector3(0, 0, 15f), _hoverDuration)
                     .SetEase(Ease.OutQuad);
                 break;
         }
@@ -122,22 +132,22 @@ public class ButtonComponent : MonoBehaviour,
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        switch (hoverAnimation)
+        switch (_hoverAnimation)
         {
             case HoverAnimationType.Move:
-                rectTransform.DOAnchorPos(originalPosition, hoverDuration)
+                _rectTransform.DOAnchorPos(_originalPosition, _hoverDuration)
                     .SetEase(Ease.OutQuad);
                 break;
 
             case HoverAnimationType.ColorTint:
-                if (buttonImage)
+                if (_buttonImage)
                 {
-                    buttonImage.DOColor(originalColor, hoverDuration);
+                    _buttonImage.DOColor(_originalColor, _hoverDuration);
                 }
                 break;
 
             case HoverAnimationType.Rotate:
-                rectTransform.DORotate(Vector3.zero, hoverDuration)
+                _rectTransform.DORotate(Vector3.zero, _hoverDuration)
                     .SetEase(Ease.OutQuad);
                 break;
         }
@@ -149,12 +159,28 @@ public class ButtonComponent : MonoBehaviour,
     
     public void OnPointerDown(PointerEventData eventData)
     {
-        rectTransform.DOScale(originalScale * 0.95f, 0.1f).SetEase(Ease.OutQuad);
+        _rectTransform.DOScale(originalScale * 0.95f, 0.1f).SetEase(Ease.OutQuad);
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        rectTransform.DOScale(originalScale, 0.1f).SetEase(Ease.OutQuad);
+        _rectTransform.DOScale(originalScale, 0.1f).SetEase(Ease.OutQuad);
+    }
+    
+    #endregion
+    
+    #region Starting Delay
+    
+    private void AddingDelay()
+    {
+        _canvasGroup.alpha = 0;
+        
+        _canvasGroup.DOFade(1, _fadeDuration)
+            .SetDelay(_delay)
+            .OnComplete(() =>
+            {
+                _button.interactable = true;
+            });
     }
     
     #endregion

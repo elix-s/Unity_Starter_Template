@@ -63,19 +63,18 @@ namespace Common.UIService
             _assetUnloader.Dispose();
         }
 
-        public async UniTask ShowMainMenu()
-        {
-            var panel = await _assetProvider.GetAssetAsync<GameObject>("MainMenu");
-            _assetUnloader.AddResource(panel);
-            _container.Instantiate(panel);
-        }
-
         public async UniTask ShowLoadingScreen(int delay)
         {
             var panel = await _assetProvider.GetAssetAsync<GameObject>("LoadingScreen");
             var prefab = _container.Instantiate(panel);
             _loadingWindowUnloader.AddResource(panel);
             _loadingWindowUnloader.AttachInstance(prefab);
+            
+            if (prefab.TryGetComponent(out FadeForCanvasGroup fader))
+            {
+                fader.Init(delay);
+            }
+            
             await UniTask.Delay(delay);
             _loadingWindowUnloader.Dispose();
         }
