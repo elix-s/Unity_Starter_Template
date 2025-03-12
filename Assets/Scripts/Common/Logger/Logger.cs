@@ -21,19 +21,20 @@ public class Logger
         if (MinimumLogLevel > LogLevel.Info)
             return;
 
-        string formattedMessage = FormatMessage("LOG", message, callerName, callerLine);
+        string formattedMessage = FormatMessage("LOG", message, callerFile,  callerName, callerLine);
         UnityEngine.Debug.Log(formattedMessage);
     }
     
     public void LogWarning(string message,
         [CallerMemberName] string callerName = "",
         [CallerFilePath] string callerFile = "",
-        [CallerLineNumber] int callerLine = 0)
+        [CallerLineNumber] int callerLine = 0
+        )
     {
         if (MinimumLogLevel > LogLevel.Warning)
             return;
 
-        string formattedMessage = FormatMessage("WARNING", message, callerName, callerLine);
+        string formattedMessage = FormatMessage("WARNING", message, callerFile, callerName, callerLine);
         UnityEngine.Debug.LogWarning(formattedMessage);
     }
     
@@ -45,12 +46,12 @@ public class Logger
         if (MinimumLogLevel > LogLevel.Error)
             return;
 
-        string formattedMessage = FormatMessage("ERROR", message, callerName, callerLine);
+        string formattedMessage = FormatMessage("ERROR", message, callerFile, callerName, callerLine);
         UnityEngine.Debug.LogError(formattedMessage);
     }
     
-    private string FormatMessage(string logType, string message, string callerName, int callerLine)
+    private string FormatMessage(string logType, string message, string callerFile, string callerName, int callerLine)
     {
-        return $"[{logType}] [{DateTime.Now:HH:mm:ss}] [{callerName}:{callerLine}] {message}";
+        return $"[{logType}] [{DateTime.Now:HH:mm:ss}] [{callerFile} : {callerName} : {callerLine}] {message}";
     }
 }

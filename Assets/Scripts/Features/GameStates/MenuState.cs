@@ -27,7 +27,6 @@ public class MenuState : IGameState
         _uiService.ShowLoadingScreen(1500).Forget();
         _logger.Log("Entering MenuState");
         _uiService.ShowUIPanelWithComponent<MainMenuView>("MainMenu").Forget();
-        _audioService.InstantiateAudioSources().Forget();
     }
     
     public void Update()

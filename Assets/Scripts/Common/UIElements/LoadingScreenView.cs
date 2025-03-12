@@ -2,9 +2,9 @@ using UnityEngine;
 using DG.Tweening;
 
 [RequireComponent(typeof(CanvasGroup))]
-public class FadeForCanvasGroup : MonoBehaviour
+public class LoadingScreenView : MonoBehaviour
 {
-    public void Init(int fadeOutTime)
+    public void Fade(int fadeOutTime)
     {
         var canvasGroup = GetComponent<CanvasGroup>();
 

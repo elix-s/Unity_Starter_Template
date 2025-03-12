@@ -1,15 +1,12 @@
-using System;
-using System.Runtime.InteropServices;
-using Codice.CM.ConfigureHelper;
 using Common.GameStateService;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
 
-public class MainMenuView : MonoBehaviour
+public class GameUIView : MonoBehaviour
 {
-    [SerializeField] private Button _startGameButton;
+    [SerializeField] private Button _toMenuButton;
     private GameStateService _gameStateService;
 
     [Inject]
@@ -20,7 +17,6 @@ public class MainMenuView : MonoBehaviour
 
     private void Awake()
     {
-        var user = "User";
-        _startGameButton.onClick.AddListener((() => _gameStateService.ChangeState<StartGameState>(user).Forget()));
+        _toMenuButton.onClick.AddListener((() => _gameStateService.ChangeState<MenuState>().Forget()));
     }
 }

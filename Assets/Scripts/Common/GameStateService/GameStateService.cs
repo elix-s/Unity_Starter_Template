@@ -1,17 +1,24 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Common.GameStateService
 {
-    public class GameStateService
+    public class GameStateService : IDisposable
     {
         private IGameState _currentState;
         private readonly Dictionary<Type, IGameState> _states = new Dictionary<Type, IGameState>();
         private readonly Stack<IGameState> _stateStack = new Stack<IGameState>();
-        
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private bool _stateInitialized = false;
+
+        public GameStateService()
+        {
+            RunLoop(_cts.Token).Forget();
+        }
+
         public void RegisterStates(IEnumerable<IGameState> states)
         {
             foreach (var state in states)
@@ -20,7 +27,7 @@ namespace Common.GameStateService
 
                 if (_states.ContainsKey(type))
                 {
-                    Debug.LogWarning($"Status {type} is already registered.");
+                    Debug.LogWarning($"State {type} is already registered.");
                 }
                 else
                 {
@@ -29,61 +36,24 @@ namespace Common.GameStateService
             }
         }
 
-        public void ChangeState<T>(object data = null) where T : IGameState
+        public async UniTask ChangeState<T>(object data = null) where T : IGameState
         {
             if (!_states.TryGetValue(typeof(T), out var newState))
-                throw new ArgumentException($"State {typeof(T)} not registered.");
-
-            var previousState = _currentState;
-            previousState?.Exit();
+                throw new ArgumentException($"State {typeof(T)} is not registered.");
+            
+            _currentState?.Exit();
 
             _currentState = newState;
             _currentState.Enter(data);
+            
+            await UniTask.Yield();
+            _stateInitialized = true;
         }
-
-        /// <summary>
-        /// Asynchronous state change. If the state implements IAsyncGameState, asynchronous methods are used.
-        /// </summary>
-        public async Task ChangeStateAsync<T>(object data = null) where T : IGameState
-        {
-            if (!_states.TryGetValue(typeof(T), out var newState))
-                throw new ArgumentException($"State {typeof(T)} not registered.");
-
-            var previousState = _currentState;
-
-            if (previousState is IAsyncGameState asyncPrev)
-            {
-                await asyncPrev.ExitAsync();
-            }
-            else
-            {
-                previousState?.Exit();
-            }
-
-            _currentState = newState;
-
-            if (_currentState is IAsyncGameState asyncCurrent)
-            {
-                await asyncCurrent.EnterAsync(data);
-            }
-            else
-            {
-                _currentState.Enter(data);
-            }
-        }
-
-        public void Update()
-        {
-            _currentState?.Update();
-        }
-
-        /// <summary>
-        /// Temporarily switch to a new state while keeping the current one on the stack.
-        /// </summary>
+        
         public void PushState<T>(object data = null) where T : IGameState
         {
             if (!_states.TryGetValue(typeof(T), out var newState))
-                throw new ArgumentException($"State {typeof(T)} not registered.");
+                throw new ArgumentException($"State {typeof(T)} is not registered.");
 
             if (_currentState != null)
             {
@@ -94,23 +64,45 @@ namespace Common.GameStateService
             _currentState = newState;
             _currentState.Enter(data);
         }
-
-        /// <summary>
-        /// Return to the previous state from the stack.
-        /// </summary>
+        
         public void PopState()
         {
             if (_stateStack.Count > 0)
             {
                 _currentState?.Exit();
-                var previousState = _stateStack.Pop();
-                _currentState = previousState;
+                _currentState = _stateStack.Pop();
                 _currentState.Enter();
             }
             else
             {
-                Debug.LogError("There are no states on the stack to return to..");
+                Debug.LogError("State stack is empty. Cannot pop state.");
             }
+        }
+
+        private async UniTaskVoid RunLoop(CancellationToken token)
+        {
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    if (_stateInitialized)
+                    {
+                        _currentState?.Update();
+                    }
+                    
+                    await UniTask.Yield(cancellationToken: token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                
+            }
+        }
+        
+        public void Dispose()
+        {
+            _cts.Cancel();
+            _cts.Dispose();
         }
     }
 }
