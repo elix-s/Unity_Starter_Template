@@ -30,6 +30,6 @@ public class StartGameState : IGameState
 
     public void Exit()
     {
-        _uiService.HideUIPanel().Forget();
+        _uiService.HideUIPanel();
     }
 }

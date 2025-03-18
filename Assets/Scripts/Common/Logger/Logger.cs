@@ -10,7 +10,7 @@ public enum LogLevel
 
 public class Logger
 {
-    public LogLevel MinimumLogLevel { get; set; } = LogLevel.Info;
+    private LogLevel _minimumLogLevel = LogLevel.Info;
     
     public void Log(string message,
         [CallerMemberName] string callerName = "",
@@ -18,7 +18,7 @@ public class Logger
         [CallerLineNumber] int callerLine = 0
         )
     {
-        if (MinimumLogLevel > LogLevel.Info)
+        if (_minimumLogLevel > LogLevel.Info)
             return;
 
         string formattedMessage = FormatMessage("LOG", message, callerFile,  callerName, callerLine);
@@ -31,7 +31,7 @@ public class Logger
         [CallerLineNumber] int callerLine = 0
         )
     {
-        if (MinimumLogLevel > LogLevel.Warning)
+        if (_minimumLogLevel > LogLevel.Warning)
             return;
 
         string formattedMessage = FormatMessage("WARNING", message, callerFile, callerName, callerLine);
@@ -43,7 +43,7 @@ public class Logger
         [CallerFilePath] string callerFile = "",
         [CallerLineNumber] int callerLine = 0)
     {
-        if (MinimumLogLevel > LogLevel.Error)
+        if (_minimumLogLevel > LogLevel.Error)
             return;
 
         string formattedMessage = FormatMessage("ERROR", message, callerFile, callerName, callerLine);

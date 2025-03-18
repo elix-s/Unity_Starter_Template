@@ -24,41 +24,56 @@ namespace Common.UIService
 
         public async UniTask<GameObject> ShowUIPanel(string assetKey)
         {
-            if (!string.IsNullOrEmpty(assetKey))
-            {
-                var panel = await _assetProvider.GetAssetAsync<GameObject>(assetKey);
-                _assetUnloader.AddResource(panel);
-
-                var prefab = _container.Instantiate(panel);
-                _assetUnloader.AttachInstance(prefab.gameObject);
-
-                return prefab;
-            }
-            else
+            if (string.IsNullOrEmpty(assetKey))
             {
                 return null;
             }
-        }
+            
+            var panel = await _assetProvider.GetAssetAsync<GameObject>(assetKey);
+            
+            if (panel == null)
+            {
+                return null;
+            }
+            
+            _assetUnloader.AddResource(panel);
+            var prefab = _container.Instantiate(panel);
+            _assetUnloader.AttachInstance(prefab.gameObject);
 
+            return prefab;
+        }
+        
         public async UniTask<T> ShowUIPanelWithComponent<T>(string assetKey) where T : Component
         {
-            if (!string.IsNullOrEmpty(assetKey))
-            {
-                var panel = await _assetProvider.GetAssetAsync<GameObject>(assetKey);
-                _assetUnloader.AddResource(panel);
-
-                var prefab = _container.Instantiate(panel).GetComponent<T>();
-                _assetUnloader.AttachInstance(prefab.gameObject);
-
-                return prefab;
-            }
-            else
+            if (string.IsNullOrEmpty(assetKey))
             {
                 return null;
             }
-        }
+            
+            var panel = await _assetProvider.GetAssetAsync<GameObject>(assetKey);
+            
+            if (panel == null)
+            {
+                return null;
+            }
+            
+            _assetUnloader.AddResource(panel);
+            
+            var instance = _container.Instantiate(panel);
+            var component = instance.GetComponent<T>();
+            
+            if (component == null)
+            {
+                Debug.LogError($"Component {typeof(T).Name} not found.");
+                return null;
+            }
+            
+            _assetUnloader.AttachInstance(instance);
 
-        public async UniTask HideUIPanel()
+            return component;
+        }
+        
+        public void HideUIPanel()
         {
             _assetUnloader.Dispose();
         }

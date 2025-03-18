@@ -141,6 +141,7 @@ MonoBehaviour:
   _pulseInterval: 1
   _onClickAnimation: 0
   _clickAnimationDuration: 0.2
+  _enableHoverAnimation: 1
   _hoverAnimation: 0
   _hoverOffset: {x: 20, y: 0, z: 0}
   _hoverDuration: 0.3

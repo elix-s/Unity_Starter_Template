@@ -21,6 +21,7 @@ public class ButtonComponent : MonoBehaviour,
     [SerializeField] private float _clickAnimationDuration = 0.2f;
 
     [Header("Hover Animation")]
+    [SerializeField] private bool _enableHoverAnimation = false;
     [SerializeField] private HoverAnimationType _hoverAnimation = HoverAnimationType.Move;
     [SerializeField] private Vector3 _hoverOffset = new Vector3(20f, 0, 0);
     [SerializeField] private float _hoverDuration = 0.3f;
@@ -44,10 +45,11 @@ public class ButtonComponent : MonoBehaviour,
         _rectTransform = GetComponent<RectTransform>();
         _originalPosition = _rectTransform.anchoredPosition;
         originalScale = _rectTransform.localScale;
+        
         _button = GetComponent<Button>();
         _buttonImage = GetComponent<Image>();
-        if (_buttonImage != null)
-            _originalColor = _buttonImage.color;
+        _originalColor = _buttonImage.color;
+        
         _canvasGroup = GetComponent<CanvasGroup>();
 
         _button.onClick.AddListener(PlayOnClickAnimation);
@@ -109,47 +111,55 @@ public class ButtonComponent : MonoBehaviour,
     
     public void OnPointerEnter(PointerEventData eventData)
     {
-        switch (_hoverAnimation)
+        if (_enableHoverAnimation)
         {
-            case HoverAnimationType.Move:
-                _rectTransform.DOAnchorPos(_originalPosition + (Vector3)_hoverOffset, _hoverDuration)
-                    .SetEase(Ease.OutQuad);
-                break;
+            switch (_hoverAnimation)
+            {
+                case HoverAnimationType.Move:
+                    _rectTransform.DOAnchorPos(_originalPosition + (Vector3)_hoverOffset, _hoverDuration)
+                        .SetEase(Ease.OutQuad);
+                    break;
 
-            case HoverAnimationType.ColorTint:
-                if (_buttonImage)
-                {
-                    _buttonImage.DOColor(_hoverColor, _hoverDuration);
-                }
-                break;
+                case HoverAnimationType.ColorTint:
+                    if (_buttonImage)
+                    {
+                        _buttonImage.DOColor(_hoverColor, _hoverDuration);
+                    }
 
-            case HoverAnimationType.Rotate:
-                _rectTransform.DORotate(new Vector3(0, 0, 15f), _hoverDuration)
-                    .SetEase(Ease.OutQuad);
-                break;
+                    break;
+
+                case HoverAnimationType.Rotate:
+                    _rectTransform.DORotate(new Vector3(0, 0, 15f), _hoverDuration)
+                        .SetEase(Ease.OutQuad);
+                    break;
+            }
         }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        switch (_hoverAnimation)
+        if (_enableHoverAnimation)
         {
-            case HoverAnimationType.Move:
-                _rectTransform.DOAnchorPos(_originalPosition, _hoverDuration)
-                    .SetEase(Ease.OutQuad);
-                break;
+            switch (_hoverAnimation)
+            {
+                case HoverAnimationType.Move:
+                    _rectTransform.DOAnchorPos(_originalPosition, _hoverDuration)
+                        .SetEase(Ease.OutQuad);
+                    break;
 
-            case HoverAnimationType.ColorTint:
-                if (_buttonImage)
-                {
-                    _buttonImage.DOColor(_originalColor, _hoverDuration);
-                }
-                break;
+                case HoverAnimationType.ColorTint:
+                    if (_buttonImage)
+                    {
+                        _buttonImage.DOColor(_originalColor, _hoverDuration);
+                    }
 
-            case HoverAnimationType.Rotate:
-                _rectTransform.DORotate(Vector3.zero, _hoverDuration)
-                    .SetEase(Ease.OutQuad);
-                break;
+                    break;
+
+                case HoverAnimationType.Rotate:
+                    _rectTransform.DORotate(Vector3.zero, _hoverDuration)
+                        .SetEase(Ease.OutQuad);
+                    break;
+            }
         }
     }
     

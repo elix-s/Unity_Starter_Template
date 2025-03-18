@@ -36,6 +36,6 @@ public class MenuState : IGameState
 
     public void Exit()
     {
-        _uiService.HideUIPanel().Forget();
+        _uiService.HideUIPanel();
     }
 }
