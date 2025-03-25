@@ -36,7 +36,6 @@ namespace Common.AudioService
                 {
                     _assetUnloader.AddResource(musicPrefab);
                     _musicSource = _container.Instantiate(musicPrefab).GetComponent<AudioSource>();
-                    _musicSource.loop = true;
                 }
             }
 
@@ -52,13 +51,15 @@ namespace Common.AudioService
             }
         }
 
-        public void PlayMusic(AudioClip musicClip, float fadeInDuration = 0f)
+        public async void PlayMusic(string musicClipAddress, bool loop = true, float fadeInDuration = 0f)
         {
             if (_musicSource != null)
             {
                 _musicSource.Stop();
+                
+                var musicClip = await _assetProvider.GetAssetAsync<AudioClip>(musicClipAddress);
                 _musicSource.clip = musicClip;
-                _musicSource.loop = true;
+                _musicSource.loop = loop;
 
                 if (fadeInDuration > 0f)
                 {
