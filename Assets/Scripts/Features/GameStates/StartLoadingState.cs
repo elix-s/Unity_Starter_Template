@@ -1,5 +1,6 @@
 using Common.GameStateService;
 using Common.SavingSystem;
+using Cysharp.Threading.Tasks;
 
 public class StartLoadingState : IGameState
 {
@@ -17,7 +18,7 @@ public class StartLoadingState : IGameState
     public void Enter(object obj)
     {
         _logger.Log("StartLoadingState");
-        _gameState.ChangeState<MenuState>();
+        _gameState.ChangeState<MenuState>().Forget();
     }
 
     public void Update(){}

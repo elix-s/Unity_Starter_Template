@@ -3,6 +3,7 @@ using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 using Cysharp.Threading.Tasks;
+using DG.DemiEditor;
 using DG.Tweening;
 
 namespace Common.AudioService
@@ -25,16 +26,30 @@ namespace Common.AudioService
             _container = container;
         }
 
-        public async UniTask InstantiateAudioSources()
+        public async UniTask InstantiateAudioSources(string musicSourceAddress, string sfxSourceAddress = null)
         {
-            GameObject musicPrefab = await _assetProvider.GetAssetAsync<GameObject>("MusicAudioSource");
-            _assetUnloader.AddResource(musicPrefab);
-            _musicSource = _container.Instantiate(musicPrefab).GetComponent<AudioSource>();
-            _musicSource.loop = true;
+            if (!musicSourceAddress.IsNullOrEmpty())
+            {
+                GameObject musicPrefab = await _assetProvider.GetAssetAsync<GameObject>(musicSourceAddress);
 
-            GameObject sfxPrefab = await _assetProvider.GetAssetAsync<GameObject>("SFXAudioSource");
-            _assetUnloader.AddResource(sfxPrefab);
-            _sfxSource = _container.Instantiate(sfxPrefab).GetComponent<AudioSource>();
+                if (musicPrefab != null)
+                {
+                    _assetUnloader.AddResource(musicPrefab);
+                    _musicSource = _container.Instantiate(musicPrefab).GetComponent<AudioSource>();
+                    _musicSource.loop = true;
+                }
+            }
+
+            if (!sfxSourceAddress.IsNullOrEmpty())
+            {
+                GameObject sfxPrefab = await _assetProvider.GetAssetAsync<GameObject>(sfxSourceAddress);
+
+                if (sfxPrefab != null)
+                {
+                    _assetUnloader.AddResource(sfxPrefab);
+                    _sfxSource = _container.Instantiate(sfxPrefab).GetComponent<AudioSource>();
+                }
+            }
         }
 
         public void PlayMusic(AudioClip musicClip, float fadeInDuration = 0f)
