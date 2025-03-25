@@ -43,14 +43,13 @@ public class ButtonComponent : MonoBehaviour,
     private void Awake()
     {
         _rectTransform = GetComponent<RectTransform>();
-        _originalPosition = _rectTransform.anchoredPosition;
-        originalScale = _rectTransform.localScale;
-        
         _button = GetComponent<Button>();
         _buttonImage = GetComponent<Image>();
-        _originalColor = _buttonImage.color;
-        
         _canvasGroup = GetComponent<CanvasGroup>();
+        
+        _originalPosition = _rectTransform.anchoredPosition;
+        originalScale = _rectTransform.localScale;
+        _originalColor = _buttonImage.color;
 
         _button.onClick.AddListener(PlayOnClickAnimation);
     }

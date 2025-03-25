@@ -22,7 +22,7 @@ public class MenuState : IGameState
         _savingSystem = savingSystem;
     }
 
-    public void Enter(object obj)
+    public async void Enter(object obj)
     {
         _uiService.ShowLoadingScreen(1500).Forget();
         _logger.Log("Entering MenuState");

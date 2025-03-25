@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class ParticleSystemManager : MonoBehaviour
 {
-    public static async UniTask<GameObject> InstantiateEffectAsyncS(string address, float destructionTime = 0, Transform parent = null,
+    public static async UniTask<GameObject> InstantiateEffectAsync(string address, float destructionTime = 0, Transform parent = null,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(address))
@@ -17,8 +17,7 @@ public class ParticleSystemManager : MonoBehaviour
 
         var assetProvider = new AssetProvider();
         var assetUnloader = new AssetUnloader();
-        
-        GameObject effect = await assetProvider.GetAssetAsync<GameObject>(address);
+        var effect = await assetProvider.GetAssetAsync<GameObject>(address);
         
         if (effect == null)
         {
@@ -36,7 +35,7 @@ public class ParticleSystemManager : MonoBehaviour
             await UniTask.Delay(TimeSpan.FromSeconds(destructionTime), cancellationToken: cancellationToken);
             assetUnloader.Dispose();
         }
-
+        
         return effect;
     }
 }
