@@ -20,7 +20,8 @@ public class MainMenuView : MonoBehaviour
 
     private void Awake()
     {
-        var user = "User";
-        _startGameButton.onClick.AddListener((() => _gameStateService.ChangeState<StartGameState>(user).Forget()));
+        var data = new StartGamePayload();
+        data.Scores = 100;
+        _startGameButton.onClick.AddListener((() => _gameStateService.ChangeState<StartGameState>(data).Forget()));
     }
 }

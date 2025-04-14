@@ -15,11 +15,15 @@ public class StartGameState : IGameState
         _uiService = uiService;
     }
 
-    public void Enter(object obj)
+    public void Enter(StatePayload payload)
     {
         _uiService.ShowLoadingScreen(1500).Forget();
-        _logger.Log("Enter Game State");
-        _logger.Log(obj.ToString());
+        
+        if (payload is StartGamePayload startGamePayload)
+        {
+            Debug.Log(startGamePayload.Scores);
+        }
+       
         _uiService.ShowUIPanelWithComponent<GameUIView>("GameUI").Forget();
     }
 

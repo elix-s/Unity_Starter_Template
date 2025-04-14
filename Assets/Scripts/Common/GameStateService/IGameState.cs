@@ -1,6 +1,6 @@
 public interface IGameState
 {
-    void Enter(object data = null);
+    void Enter(StatePayload payload = null);
     void Update();
     void Exit();
 }

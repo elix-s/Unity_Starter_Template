@@ -36,7 +36,7 @@ namespace Common.GameStateService
             }
         }
 
-        public async UniTask ChangeState<T>(object data = null) where T : IGameState
+        public async UniTask ChangeState<T>(StatePayload statePayload = null) where T : IGameState
         {
             if (!_states.TryGetValue(typeof(T), out var newState))
                 throw new ArgumentException($"State {typeof(T)} is not registered.");
@@ -44,13 +44,13 @@ namespace Common.GameStateService
             _currentState?.Exit();
 
             _currentState = newState;
-            _currentState.Enter(data);
+            _currentState.Enter(statePayload);
             
             await UniTask.Yield();
             _stateInitialized = true;
         }
         
-        public void PushState<T>(object data = null) where T : IGameState
+        public void PushState<T>(StatePayload statePayload = null) where T : IGameState
         {
             if (!_states.TryGetValue(typeof(T), out var newState))
                 throw new ArgumentException($"State {typeof(T)} is not registered.");
@@ -62,7 +62,7 @@ namespace Common.GameStateService
             }
 
             _currentState = newState;
-            _currentState.Enter(data);
+            _currentState.Enter(statePayload);
         }
         
         public void PopState()

@@ -15,7 +15,7 @@ public class StartLoadingState : IGameState
         _savingSystem = savingSystem;
     }
     
-    public void Enter(object obj)
+    public void Enter(StatePayload payload)
     {
         _logger.Log("StartLoadingState");
         _gameState.ChangeState<MenuState>().Forget();
