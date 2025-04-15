@@ -2,19 +2,15 @@ using System;
 using System.IO;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace Common.SavingSystem
 {
     public class SavingSystem
     {
-        /// <summary>
-        /// Loads data from a JSON file located at Application.persistentDataPath.
-        /// If the file does not exist, returns a new instance of type T.
-        /// </summary>
-        /// <typeparam name="T">The type of data to load (eg AppData)</typeparam>
-        /// <returns>An instance of data type T, filled from a file or a new instance</returns>
-        public async UniTask<T> LoadDataAsync<T>()
+        public async UniTask<T> LoadDataAsync<T>(DataMigrator<T> migrator = null)
+            where T : IVersionedData, new()
         {
             string fileName = typeof(T).Name + ".json";
             string filePath = Path.Combine(Application.persistentDataPath, fileName);
@@ -22,28 +18,44 @@ namespace Common.SavingSystem
             if (!File.Exists(filePath))
             {
                 Debug.Log($"File {filePath} not found. Creating new data instance.");
-                return Activator.CreateInstance<T>();
+                return new T();
             }
 
             try
             {
                 string json = await UniTask.RunOnThreadPool(() => File.ReadAllText(filePath));
+                var jo = Newtonsoft.Json.Linq.JObject.Parse(json);
+                int fileVersion = jo["Version"]?.Value<int>() ?? 0;
+                
+                T currentInstance = new T();
+                int currentVersion = currentInstance.Version;
+
+                if (fileVersion != currentVersion)
+                {
+                    Debug.Log($"Data version mismatch: saved={fileVersion}, current={currentVersion}. Migration required.");
+
+                    if (migrator == null)
+                    {
+                        Debug.LogWarning($"No migrator provided for type {typeof(T).Name}. Returning default.");
+                        return new T();
+                    }
+                    else
+                    {
+                        return migrator.Migrate(json, fileVersion, currentVersion);
+                    }
+                }
+                
                 T data = JsonConvert.DeserializeObject<T>(json);
                 return data;
             }
             catch (Exception ex)
             {
                 Debug.LogError($"Error loading data from {filePath}: {ex.Message}");
-                return Activator.CreateInstance<T>();
+                return new T();
             }
         }
-        
-        /// <summary>
-        /// Serializes data to JSON and saves it to a file in Application.persistentDataPath.
-        /// </summary>
-        /// <typeparam name="T">The type of data being transferred (e.g. AppData)</typeparam>
-        /// <param name="data">The data instance to be saved</param>
-        public async UniTask SaveDataAsync<T>(T data)
+
+        public async UniTask SaveDataAsync<T>(T data) where T : IVersionedData
         {
             string fileName = typeof(T).Name + ".json";
             string filePath = Path.Combine(Application.persistentDataPath, fileName);
@@ -59,7 +71,7 @@ namespace Common.SavingSystem
                 Debug.LogError($"Error saving data to {filePath}: {ex.Message}");
             }
         }
-        
+
         public void ClearData<T>()
         {
             string fileName = typeof(T).Name + ".json";
