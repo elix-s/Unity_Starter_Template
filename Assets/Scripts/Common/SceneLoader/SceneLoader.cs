@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using System; 
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,34 +12,74 @@ public class SceneLoader
         _logger = logger;
     }
     
-    /// <param name="sceneName">Scene name</param>
-    /// <param name="mode">Loading Mode (Single or Additive)</param>
-    /// <param name="useAsync">Optional parameter: true - asynchronous loading, false - synchronous</param>
-    public async UniTask LoadScene(string sceneName, LoadSceneMode mode = LoadSceneMode.Single, bool useAsync = true)
+    public async UniTask<bool> LoadScene(string sceneName, LoadSceneMode mode = LoadSceneMode.Single, bool useAsync = true)
     {
-        _logger.Log($"Start loading scene '{sceneName}' with mode '{mode}'. Asynchronous loading: {{useAsync}}");
+        _logger.Log($"Attempting to load scene '{sceneName}' with mode '{mode}'. Async: {useAsync}");
 
-        if (useAsync)
+        try
         {
-            AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(sceneName, mode);
-
-            if (asyncOperation != null)
+            if (useAsync)
             {
-                asyncOperation.allowSceneActivation = true;
+                AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(sceneName, mode);
 
-                while (!asyncOperation.isDone)
+                if (asyncOperation == null)
                 {
-                    float progress = Mathf.Clamp01(asyncOperation.progress / 0.9f);
-                    _logger.Log($"Scene loading '{sceneName}': {(progress * 100f):F1}%");
-                    await UniTask.Yield();
+                    _logger.LogError($"Failed to start loading scene '{sceneName}'. LoadSceneAsync returned null.");
+                    return false;
                 }
+                
+                await asyncOperation.ToUniTask(Progress.Create<float>(p =>
+                {
+                    float displayProgress = Mathf.Clamp01(p / 0.9f);
+                    _logger.Log($"Scene loading '{sceneName}': {(displayProgress * 100f):F1}%");
+                }));
             }
-        }
-        else
-        {
-            SceneManager.LoadScene(sceneName, mode);
-        }
+            else
+            {
+                SceneManager.LoadScene(sceneName, mode);
+            }
 
-        _logger.Log($"Scene '{sceneName}' successfully uploaded.");
+            _logger.Log($"Scene '{sceneName}' loaded successfully.");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Failed to load scene '{sceneName}'. Error: {ex.Message}\n{ex.StackTrace}");
+            return false;
+        }
+    }
+    
+    public async UniTask<bool> UnloadSceneAsync(string sceneName)
+    {
+        _logger.Log($"Attempting to unload scene '{sceneName}'.");
+        
+        try
+        {
+            Scene sceneToUnload = SceneManager.GetSceneByName(sceneName);
+            
+            if (!sceneToUnload.IsValid() || !sceneToUnload.isLoaded)
+            {
+                _logger.LogWarning($"Scene '{sceneName}' not found or not loaded. Cannot unload.");
+                return false; 
+            }
+
+            AsyncOperation asyncOperation = SceneManager.UnloadSceneAsync(sceneName);
+            
+            if (asyncOperation == null)
+            {
+                _logger.LogError($"Failed to start unloading scene '{sceneName}'. UnloadSceneAsync returned null.");
+                return false;
+            }
+
+            await asyncOperation.ToUniTask(); 
+
+            _logger.Log($"Scene '{sceneName}' unloaded successfully.");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Failed to unload scene '{sceneName}'. Error: {ex.Message}\n{ex.StackTrace}");
+            return false;
+        }
     }
 }
