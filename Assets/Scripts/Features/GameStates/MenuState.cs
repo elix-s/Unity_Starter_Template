@@ -27,12 +27,6 @@ public class MenuState : IGameState
         _uiService.ShowLoadingScreen(1500).Forget();
         _logger.Log("Entering MenuState");
         _uiService.ShowUIPanelWithComponent<MainMenuView>("MainMenu").Forget();
-
-        //var data = new AppData();
-        //data.Scores = 200;
-        //await _savingSystem.SaveDataAsync(data);
-        var d = await _savingSystem.LoadDataAsync<AppData>();
-        Debug.Log(d.Scores);
     }
     
     public void Update()

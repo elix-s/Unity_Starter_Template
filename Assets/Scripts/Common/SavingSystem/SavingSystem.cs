@@ -23,10 +23,17 @@ namespace Common.SavingSystem
 
             try
             {
-                string json = await UniTask.RunOnThreadPool(() => File.ReadAllText(filePath));
-                var jo = Newtonsoft.Json.Linq.JObject.Parse(json);
+                string encoded = await UniTask.RunOnThreadPool(() => File.ReadAllText(filePath));
+                byte[] encryptedBytes = Convert.FromBase64String(encoded);
+
+                const byte encryptionKey = 0xAF;
+                byte[] jsonBytes = Xor(encryptedBytes, encryptionKey);
+
+                string json = System.Text.Encoding.UTF8.GetString(jsonBytes);
+
+                var jo = JObject.Parse(json);
                 int fileVersion = jo["Version"]?.Value<int>() ?? 0;
-                
+
                 T currentInstance = new T();
                 int currentVersion = currentInstance.Version;
 
@@ -44,7 +51,7 @@ namespace Common.SavingSystem
                         return migrator.Migrate(json, fileVersion, currentVersion);
                     }
                 }
-                
+
                 T data = JsonConvert.DeserializeObject<T>(json);
                 return data;
             }
@@ -54,7 +61,7 @@ namespace Common.SavingSystem
                 return new T();
             }
         }
-
+        
         public async UniTask SaveDataAsync<T>(T data) where T : IVersionedData
         {
             string fileName = typeof(T).Name + ".json";
@@ -63,7 +70,13 @@ namespace Common.SavingSystem
             try
             {
                 string json = JsonConvert.SerializeObject(data, Formatting.Indented);
-                await UniTask.RunOnThreadPool(() => File.WriteAllText(filePath, json));
+                byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(json);
+
+                const byte encryptionKey = 0xAF;
+                byte[] encryptedBytes = Xor(jsonBytes, encryptionKey);
+
+                string encoded = Convert.ToBase64String(encryptedBytes);
+                await UniTask.RunOnThreadPool(() => File.WriteAllText(filePath, encoded));
                 Debug.Log($"The data has been successfully saved to {filePath}.");
             }
             catch (Exception ex)
@@ -71,7 +84,7 @@ namespace Common.SavingSystem
                 Debug.LogError($"Error saving data to {filePath}: {ex.Message}");
             }
         }
-
+        
         public void ClearData<T>()
         {
             string fileName = typeof(T).Name + ".json";
@@ -94,5 +107,16 @@ namespace Common.SavingSystem
                 Debug.Log($"File {filePath} not found.");
             }
         }
+        
+        private static byte[] Xor(byte[] data, byte key)
+        {
+            byte[] result = new byte[data.Length];
+            
+            for (int i = 0; i < data.Length; i++)
+                result[i] = (byte)(data[i] ^ key);
+            
+            return result;
+        }
+
     }
 }
