@@ -15,7 +15,7 @@ public class StartLoadingState : IGameState
         _savingSystem = savingSystem;
     }
     
-    public void Enter(StatePayload payload)
+    public async UniTask Enter(StatePayload payload)
     {
         _logger.Log("StartLoadingState");
         _gameState.ChangeState<MenuState>().Forget();
@@ -23,5 +23,5 @@ public class StartLoadingState : IGameState
 
     public void Update(){}
     
-    public void Exit() {}
+    public async UniTask Exit() {}
 }

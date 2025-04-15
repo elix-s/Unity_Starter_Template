@@ -22,7 +22,7 @@ public class MenuState : IGameState
         _savingSystem = savingSystem;
     }
 
-    public async void Enter(StatePayload payload)
+    public async UniTask Enter(StatePayload payload)
     {
         _uiService.ShowLoadingScreen(1500).Forget();
         _logger.Log("Entering MenuState");
@@ -34,7 +34,7 @@ public class MenuState : IGameState
         
     }
 
-    public void Exit()
+    public async UniTask Exit()
     {
         _uiService.HideUIPanel();
     }

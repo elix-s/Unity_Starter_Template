@@ -12,7 +12,7 @@ namespace Common.GameStateService
         private readonly Dictionary<Type, IGameState> _states = new Dictionary<Type, IGameState>();
         private readonly Stack<IGameState> _stateStack = new Stack<IGameState>();
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-        private bool _stateInitialized = false;
+        private bool _stateEntering = false;
 
         public GameStateService()
         {
@@ -41,16 +41,14 @@ namespace Common.GameStateService
             if (!_states.TryGetValue(typeof(T), out var newState))
                 throw new ArgumentException($"State {typeof(T)} is not registered.");
             
-            _currentState?.Exit();
-
+            await (_currentState?.Exit() ?? UniTask.CompletedTask);
             _currentState = newState;
-            _currentState.Enter(statePayload);
+            await _currentState.Enter(statePayload);
             
-            await UniTask.Yield();
-            _stateInitialized = true;
+            _stateEntering = true;
         }
         
-        public void PushState<T>(StatePayload statePayload = null) where T : IGameState
+        public async UniTask PushState<T>(StatePayload statePayload = null) where T : IGameState
         {
             if (!_states.TryGetValue(typeof(T), out var newState))
                 throw new ArgumentException($"State {typeof(T)} is not registered.");
@@ -58,20 +56,20 @@ namespace Common.GameStateService
             if (_currentState != null)
             {
                 _stateStack.Push(_currentState);
-                _currentState.Exit();
+                await _currentState.Exit();
             }
 
             _currentState = newState;
-            _currentState.Enter(statePayload);
+            await _currentState.Enter(statePayload);
         }
         
-        public void PopState()
+        public async UniTask PopState()
         {
             if (_stateStack.Count > 0)
             {
-                _currentState?.Exit();
+                await (_currentState?.Exit() ?? UniTask.CompletedTask);
                 _currentState = _stateStack.Pop();
-                _currentState.Enter();
+                await _currentState.Enter();
             }
             else
             {
@@ -85,7 +83,7 @@ namespace Common.GameStateService
             {
                 while (!token.IsCancellationRequested)
                 {
-                    if (_stateInitialized)
+                    if (_stateEntering)
                     {
                         _currentState?.Update();
                     }

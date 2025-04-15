@@ -15,7 +15,7 @@ public class StartGameState : IGameState
         _uiService = uiService;
     }
 
-    public void Enter(StatePayload payload)
+    public async UniTask Enter(StatePayload payload)
     {
         _uiService.ShowLoadingScreen(1500).Forget();
         
@@ -32,7 +32,7 @@ public class StartGameState : IGameState
         Debug.Log("Update");
     }
 
-    public void Exit()
+    public async UniTask Exit()
     {
         _uiService.HideUIPanel();
     }
