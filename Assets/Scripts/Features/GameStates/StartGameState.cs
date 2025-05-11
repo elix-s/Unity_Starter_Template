@@ -17,7 +17,8 @@ public class StartGameState : IGameState
 
     public async UniTask Enter(StatePayload payload)
     {
-        _uiService.ShowLoadingScreen(1500).Forget();
+        var transition = await _uiService.ShowUIPanelWithComponent<StateTransitionWindowView>("StateTransitionWindow");
+        transition.Fade(1500);
         
         if (payload is StartGamePayload startGamePayload)
         {

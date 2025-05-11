@@ -1,5 +1,6 @@
 using Common.AssetsSystem;
 using Cysharp.Threading.Tasks;
+using UnityEditor;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -76,22 +77,6 @@ namespace Common.UIService
         public void HideUIPanel()
         {
             _assetUnloader.Dispose();
-        }
-
-        public async UniTask ShowLoadingScreen(int duration, bool fade = true)
-        {
-            var panel = await _assetProvider.GetAssetAsync<GameObject>("LoadingScreen");
-            var view = _container.Instantiate(panel).GetComponent<LoadingScreenView>();
-            _loadingWindowUnloader.AddResource(panel);
-            _loadingWindowUnloader.AttachInstance(view.gameObject);
-
-            if (fade)
-            {
-                view.Fade(duration);
-            }
-            
-            await UniTask.Delay(duration);
-            _loadingWindowUnloader.Dispose();
         }
     }
 }

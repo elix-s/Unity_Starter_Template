@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 4376476480060641703}
   - component: {fileID: 7658888793257837336}
   m_Layer: 5
-  m_Name: LoadingScreen
+  m_Name: StateTransitionWindow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

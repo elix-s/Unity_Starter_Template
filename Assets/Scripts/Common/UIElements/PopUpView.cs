@@ -35,12 +35,9 @@ public class PopUpView : MonoBehaviour
 
     [Header("Shake Effect Settings")] 
     [SerializeField] private float _shakeStrength = 10f; 
-    [SerializeField] private int _shakeVibrato = 10;   
+    [SerializeField] private int _shakeVibratio = 10;   
     [SerializeField] private float _shakeRandomness = 90f; 
     [SerializeField] private bool _shakeFadeOutEffect = true; 
-
-    [Header("State")]
-    [SerializeField] private bool _startHidden = true;
     
     private Vector3 _initialPanelScale;
     private Vector2 _initialPanelAnchoredPosition;
@@ -77,35 +74,8 @@ public class PopUpView : MonoBehaviour
         _initialPanelScale = _targetPanelRectTransform.localScale;
         _initialPanelAnchoredPosition = _targetPanelRectTransform.anchoredPosition;
         _initialPanelRotation = _targetPanelRectTransform.localRotation; 
-
-        if (_startHidden)
-        {
-            _targetPanelRectTransform.gameObject.SetActive(false); 
-            
-            if (_targetPanelCanvasGroup != null)
-            {
-                _targetPanelCanvasGroup.alpha = 0f;
-                _targetPanelCanvasGroup.interactable = false;
-                _targetPanelCanvasGroup.blocksRaycasts = false;
-            }
-            
-            _isShown = false;
-        }
-        else 
-        {
-            _targetPanelRectTransform.gameObject.SetActive(true);
-            
-            if (_targetPanelCanvasGroup != null)
-            {
-                _targetPanelCanvasGroup.alpha = 1f;
-                _targetPanelCanvasGroup.interactable = true;
-                _targetPanelCanvasGroup.blocksRaycasts = true;
-            }
-            
-            _isShown = true;
-        }
     }
-
+    
     public void Show(bool show, bool immediate = false)
     {
         if (_targetPanelRectTransform == null) return; 
@@ -171,6 +141,7 @@ public class PopUpView : MonoBehaviour
                     {
                          _targetPanelCanvasGroup.alpha = 0f;
                     }
+                    
                     _targetPanelCanvasGroup.interactable = false;
                 }
                 
@@ -277,7 +248,7 @@ public class PopUpView : MonoBehaviour
                 break;
             case PopUpAnimationType.Shake:
                 tween = _targetPanelRectTransform.DOShakeAnchorPos(
-                    duration, _shakeStrength, _shakeVibrato, _shakeRandomness, 
+                    duration, _shakeStrength, _shakeVibratio, _shakeRandomness, 
                     snapping: false, fadeOut: _shakeFadeOutEffect 
                 );
                 break;
@@ -320,7 +291,7 @@ public class PopUpView : MonoBehaviour
 
                 shakeHideSequence.Append(
                     _targetPanelRectTransform.DOShakeAnchorPos(
-                        shakePartDuration, _shakeStrength, _shakeVibrato, _shakeRandomness, 
+                        shakePartDuration, _shakeStrength, _shakeVibratio, _shakeRandomness, 
                         snapping: false, fadeOut: _shakeFadeOutEffect
                     )
                 );
@@ -374,7 +345,7 @@ public class PopUpView : MonoBehaviour
         _currentTween = null;
     }
 
-    void OnDestroy()
+    private void OnDestroy()
     {
         KillCurrentTween();
     }

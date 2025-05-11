@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using Common.AudioService;
 using Common.SavingSystem;
 using Common.UIService;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -26,7 +27,8 @@ public class MenuState : IGameState
     public async UniTask Enter(StatePayload payload)
     {
         CallTracer.TraceMethodEntry();
-        _uiService.ShowLoadingScreen(1500).Forget();
+        var transition = await _uiService.ShowUIPanelWithComponent<StateTransitionWindowView>("StateTransitionWindow");
+        transition.Fade(1500);
         _logger.Log("Entering MenuState");
         _uiService.ShowUIPanelWithComponent<MainMenuView>("MainMenu").Forget();
     }
