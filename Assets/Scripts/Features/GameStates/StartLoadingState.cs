@@ -17,6 +17,7 @@ public class StartLoadingState : IGameState
     
     public async UniTask Enter(StatePayload payload)
     {
+        CallTracer.TraceMethodEntry();
         _logger.Log("StartLoadingState");
         _gameState.ChangeState<MenuState>().Forget();
     }

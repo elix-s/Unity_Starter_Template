@@ -25,6 +25,7 @@ public class MenuState : IGameState
 
     public async UniTask Enter(StatePayload payload)
     {
+        CallTracer.TraceMethodEntry();
         _uiService.ShowLoadingScreen(1500).Forget();
         _logger.Log("Entering MenuState");
         _uiService.ShowUIPanelWithComponent<MainMenuView>("MainMenu").Forget();
@@ -37,6 +38,7 @@ public class MenuState : IGameState
 
     public async UniTask Exit()
     {
+        CallTracer.TraceMethodEntry();
         _uiService.HideUIPanel();
     }
 }
