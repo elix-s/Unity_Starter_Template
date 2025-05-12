@@ -9,6 +9,9 @@ namespace Common.SavingSystem
 {
     public class SavingSystem
     {
+        //do not store the encryption key in plaintext in the real application
+        private static readonly byte[] _encryptionKey = { 0xAF, 0x12, 0x34, 0xCD, 0xEF, 0x56, 0x78, 0x90 };
+        
         public async UniTask<T> LoadDataAsync<T>(DataMigrator<T> migrator = null)
             where T : IVersionedData, new()
         {
@@ -25,14 +28,36 @@ namespace Common.SavingSystem
             {
                 string encoded = await UniTask.RunOnThreadPool(() => File.ReadAllText(filePath));
                 byte[] encryptedBytes = Convert.FromBase64String(encoded);
-
-                const byte encryptionKey = 0xAF;
-                byte[] jsonBytes = Xor(encryptedBytes, encryptionKey);
-
+                
+                byte[] jsonBytes = XorWithKey(encryptedBytes, _encryptionKey);
                 string json = System.Text.Encoding.UTF8.GetString(jsonBytes);
+                
+                int fileVersion; 
 
-                var jo = JObject.Parse(json);
-                int fileVersion = jo["Version"]?.Value<int>() ?? 0;
+                try 
+                {
+                    var jo = JObject.Parse(json);
+                    
+                    if (jo.TryGetValue("Version", StringComparison.OrdinalIgnoreCase, out JToken versionToken) && versionToken.Type == JTokenType.Integer)
+                    {
+                        fileVersion = versionToken.Value<int>();
+                    }
+                    else
+                    {
+                        Debug.LogError($"Invalid or missing 'Version' field in file {filePath}. Assuming data is corrupted or incompatible.");
+                        return new T();
+                    }
+                }
+                catch (JsonReaderException jsonEx) 
+                {
+                    Debug.LogError($"Error parsing JSON from file {filePath}: {jsonEx.Message}. File might be corrupted.");
+                    return new T(); 
+                }
+                catch (Exception ex) 
+                {
+                    Debug.LogError($"Error processing version from {filePath}: {ex.Message}");
+                    return new T();
+                }
 
                 T currentInstance = new T();
                 int currentVersion = currentInstance.Version;
@@ -46,14 +71,20 @@ namespace Common.SavingSystem
                         Debug.LogWarning($"No migrator provided for type {typeof(T).Name}. Returning default.");
                         return new T();
                     }
-                    else
-                    {
-                        return migrator.Migrate(json, fileVersion, currentVersion);
-                    }
+                    
+                    return migrator.Migrate(json, fileVersion, currentVersion);
                 }
-
-                T data = JsonConvert.DeserializeObject<T>(json);
-                return data;
+                
+                try
+                {
+                    T data = JsonConvert.DeserializeObject<T>(json);
+                    return data;
+                }
+                catch(Exception ex)
+                {
+                    Debug.LogError($"Error deserializing data object from {filePath}: {ex.Message}");
+                    return new T(); 
+                }
             }
             catch (Exception ex)
             {
@@ -71,9 +102,8 @@ namespace Common.SavingSystem
             {
                 string json = JsonConvert.SerializeObject(data, Formatting.Indented);
                 byte[] jsonBytes = System.Text.Encoding.UTF8.GetBytes(json);
-
-                const byte encryptionKey = 0xAF;
-                byte[] encryptedBytes = Xor(jsonBytes, encryptionKey);
+                
+                byte[] encryptedBytes = XorWithKey(jsonBytes, _encryptionKey);
 
                 string encoded = Convert.ToBase64String(encryptedBytes);
                 await UniTask.RunOnThreadPool(() => File.WriteAllText(filePath, encoded));
@@ -108,12 +138,14 @@ namespace Common.SavingSystem
             }
         }
         
-        private static byte[] Xor(byte[] data, byte key)
+        private static byte[] XorWithKey(byte[] data, byte[] key)
         {
             byte[] result = new byte[data.Length];
             
             for (int i = 0; i < data.Length; i++)
-                result[i] = (byte)(data[i] ^ key);
+            {
+                result[i] = (byte)(data[i] ^ key[i % key.Length]); 
+            }
             
             return result;
         }

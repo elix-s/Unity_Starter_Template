@@ -193,10 +193,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _targetPanelRectTransform: {fileID: 5888373495752928169}
   _targetPanelCanvasGroup: {fileID: 0}
-  _showAnimationType: 3
+  _showAnimationType: 2
   _showAnimationDuration: 1
   _showEase: 6
-  _hideAnimationType: 4
+  _hideAnimationType: 7
   _hideAnimationDuration: 1
   _hideEase: 6
   _slideOffset: 100

@@ -286,8 +286,8 @@ public class PopUpView : MonoBehaviour
                 break;
             case PopUpAnimationType.Shake:
                 Sequence shakeHideSequence = DOTween.Sequence();
-                float shakePartDuration = duration * 0.7f; // Shake
-                float fadePartDuration = duration * 0.3f;  // FadeOut
+                float shakePartDuration = duration * 0.9f; // Shake
+                float fadePartDuration = duration * 0.1f;  // FadeOut
 
                 shakeHideSequence.Append(
                     _targetPanelRectTransform.DOShakeAnchorPos(
