@@ -1,1 +1,1 @@
-A starter framework for quickly starting game development on Unity. Includes a dependency injection container, lightweight state machine, convenient system for saving/loading data, built-in system for working with assets via Addresables and some useful services and plugins.
+A starter template for quickly starting game development on Unity. Includes a dependency injection container, lightweight state machine, convenient system for saving/loading data, built-in system for working with assets via Addresables, advanced logging system, and some useful services and plugins.
